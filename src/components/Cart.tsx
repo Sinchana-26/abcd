@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { X, ShoppingBag, Loader2, CheckCircle } from 'lucide-react';
+import { X, ShoppingBag, Loader2, CheckCircle, CreditCard, Paypal, DollarSign } from 'lucide-react';
 import { useCartStore } from '../store/cartStore';
 
 export function Cart() {
@@ -8,6 +8,7 @@ export function Cart() {
   const [total, setTotal] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
   const [checkoutSuccess, setCheckoutSuccess] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState("credit_card");
 
   // Recalculate total whenever cart items change
   useEffect(() => {
@@ -30,6 +31,7 @@ export function Cart() {
 
   // Handle dummy checkout
   const handleCheckout = () => {
+    if (!paymentMethod) return;
     setIsProcessing(true);
     setTimeout(() => {
       setIsProcessing(false);
@@ -127,15 +129,48 @@ export function Cart() {
                   )}
                 </div>
 
-                {/* Cart Total & Checkout */}
+                {/* Payment Method Selection */}
                 {items.length > 0 && (
                   <div className="mt-6">
-                    <div className="flex justify-between mb-4">
+                    <h3 className="font-bold text-sm mb-2">Select Payment Method:</h3>
+                    <div className="flex gap-2">
+                      <button
+                        className={`pixel-button flex items-center gap-2 p-2 w-full ${
+                          paymentMethod === "credit_card" ? "bg-purple-800 text-white" : ""
+                        }`}
+                        onClick={() => setPaymentMethod("credit_card")}
+                      >
+                        <CreditCard className="w-4 h-4" />
+                        Credit Card
+                      </button>
+                      <button
+                        className={`pixel-button flex items-center gap-2 p-2 w-full ${
+                          paymentMethod === "paypal" ? "bg-purple-800 text-white" : ""
+                        }`}
+                        onClick={() => setPaymentMethod("paypal")}
+                      >
+                        <Paypal className="w-4 h-4" />
+                        PayPal
+                      </button>
+                      <button
+                        className={`pixel-button flex items-center gap-2 p-2 w-full ${
+                          paymentMethod === "google_pay" ? "bg-purple-800 text-white" : ""
+                        }`}
+                        onClick={() => setPaymentMethod("google_pay")}
+                      >
+                        <DollarSign className="w-4 h-4" />
+                        Google Pay
+                      </button>
+                    </div>
+
+                    {/* Cart Total & Checkout */}
+                    <div className="flex justify-between mt-4">
                       <span className="font-bold text-sm">Total:</span>
                       <span className="font-bold text-sm">${total.toFixed(2)}</span>
                     </div>
+
                     <button 
-                      className="pixel-button w-full flex justify-center items-center"
+                      className="pixel-button w-full flex justify-center items-center mt-4"
                       onClick={handleCheckout}
                       disabled={isProcessing}
                     >
@@ -144,7 +179,7 @@ export function Cart() {
                           <Loader2 className="w-4 h-4 animate-spin mr-2" /> Processing...
                         </>
                       ) : (
-                        "CHECKOUT"
+                        `PAY WITH ${paymentMethod.toUpperCase().replace("_", " ")}`
                       )}
                     </button>
                   </div>
