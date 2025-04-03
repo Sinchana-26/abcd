@@ -10,13 +10,12 @@ export function Cart() {
   const [checkoutSuccess, setCheckoutSuccess] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("credit_card");
 
-  // Recalculate total whenever cart items change
+  // Calculate total whenever cart updates
   useEffect(() => {
-    const newTotal = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
-    setTotal(newTotal);
+    setTotal(items.reduce((sum, item) => sum + item.product.price * item.quantity, 0));
   }, [items]);
 
-  // Handle keyboard navigation (close cart on ESC)
+  // Handle keyboard "Escape" to close cart
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') {
@@ -29,19 +28,21 @@ export function Cart() {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isOpen]);
 
-  // Handle dummy checkout
+  // Simulate checkout process
   const handleCheckout = () => {
-    if (!paymentMethod) return;
+    if (items.length === 0) return; // Prevent checkout on empty cart
     setIsProcessing(true);
+    
     setTimeout(() => {
       setIsProcessing(false);
       setCheckoutSuccess(true);
-      clearCart(); // Empty the cart after checkout
+      clearCart(); // Empty cart after successful checkout
+
       setTimeout(() => {
         setCheckoutSuccess(false);
         setIsOpen(false);
-      }, 2000); // Auto-close after 2 seconds
-    }, 2000); // Simulating a 2-second payment delay
+      }, 2000); // Auto-close after success
+    }, 2000); // Simulated 2-second processing
   };
 
   return (
@@ -63,7 +64,7 @@ export function Cart() {
       {/* Cart Drawer */}
       {isOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-end">
-          <div className="h-full w-96 bg-white p-6 transform transition-transform duration-300 ease-in-out translate-x-0">
+          <div className="h-full w-96 bg-white p-6 shadow-lg transition-transform duration-300 ease-in-out">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-bold text-purple-800">Your Cart</h2>
               <button onClick={() => setIsOpen(false)} aria-label="Close cart">
@@ -76,7 +77,7 @@ export function Cart() {
               <div className="flex flex-col items-center text-center text-green-600">
                 <CheckCircle className="w-12 h-12 mb-2" />
                 <p className="text-lg font-semibold">Payment Successful!</p>
-                <p className="text-sm text-gray-500">Thank you for your purchase.</p>
+                <p className="text-sm text-gray-500">Paid with {paymentMethod.replace("_", " ")}</p>
               </div>
             ) : (
               <>
@@ -84,12 +85,12 @@ export function Cart() {
                 <div className="space-y-4">
                   {items.length > 0 ? (
                     items.map((item) => (
-                      <div key={item.product.id} className="pixel-card p-4">
+                      <div key={item.product.id} className="p-4 border rounded-lg shadow-sm">
                         <div className="flex gap-4">
                           <img
                             src={item.product.image}
                             alt={item.product.name}
-                            className="w-20 h-20 object-cover"
+                            className="w-20 h-20 object-cover rounded-md"
                           />
                           <div className="flex-1">
                             <h3 className="text-sm font-bold text-purple-800">
@@ -100,7 +101,7 @@ export function Cart() {
                             </p>
                             <div className="flex items-center gap-2 mt-2">
                               <button
-                                className="pixel-button px-2 py-1 text-xs disabled:opacity-50"
+                                className="border px-2 py-1 text-xs rounded disabled:opacity-50"
                                 onClick={() => updateQuantity(item.product.id, Math.max(1, item.quantity - 1))}
                                 disabled={item.quantity === 1}
                               >
@@ -108,7 +109,7 @@ export function Cart() {
                               </button>
                               <span className="text-sm">{item.quantity}</span>
                               <button
-                                className="pixel-button px-2 py-1 text-xs"
+                                className="border px-2 py-1 text-xs rounded"
                                 onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
                               >
                                 +
@@ -135,7 +136,7 @@ export function Cart() {
                     <h3 className="font-bold text-sm mb-2">Select Payment Method:</h3>
                     <div className="flex gap-2">
                       <button
-                        className={`pixel-button flex items-center gap-2 p-2 w-full ${
+                        className={`border flex items-center gap-2 p-2 w-full rounded-md ${
                           paymentMethod === "credit_card" ? "bg-purple-800 text-white" : ""
                         }`}
                         onClick={() => setPaymentMethod("credit_card")}
@@ -144,7 +145,7 @@ export function Cart() {
                         Credit Card
                       </button>
                       <button
-                        className={`pixel-button flex items-center gap-2 p-2 w-full ${
+                        className={`border flex items-center gap-2 p-2 w-full rounded-md ${
                           paymentMethod === "paypal" ? "bg-purple-800 text-white" : ""
                         }`}
                         onClick={() => setPaymentMethod("paypal")}
@@ -153,7 +154,7 @@ export function Cart() {
                         PayPal
                       </button>
                       <button
-                        className={`pixel-button flex items-center gap-2 p-2 w-full ${
+                        className={`border flex items-center gap-2 p-2 w-full rounded-md ${
                           paymentMethod === "google_pay" ? "bg-purple-800 text-white" : ""
                         }`}
                         onClick={() => setPaymentMethod("google_pay")}
@@ -170,9 +171,9 @@ export function Cart() {
                     </div>
 
                     <button 
-                      className="pixel-button w-full flex justify-center items-center mt-4"
+                      className="w-full bg-purple-800 text-white px-4 py-2 mt-4 rounded-md flex justify-center items-center"
                       onClick={handleCheckout}
-                      disabled={isProcessing}
+                      disabled={isProcessing || items.length === 0}
                     >
                       {isProcessing ? (
                         <>
